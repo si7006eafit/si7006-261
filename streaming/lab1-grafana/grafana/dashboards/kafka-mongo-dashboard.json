@@ -1,0 +1,102 @@
+{
+  "id": null,
+  "uid": "kafka-mongo-streaming",
+  "title": "Kafka → MongoDB Streaming Dashboard",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 2,
+  "refresh": "5s",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Total alertas",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "targets": [
+        {
+          "type": "json",
+          "source": "url",
+          "url": "http://dashboard-api:8000/alerts_total",
+          "format": "table",
+          "parser": "jq",
+	  "root_selector": "."
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "value",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value"
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Alertas por minuto",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "targets": [
+        {
+          "type": "json",
+          "source": "url",
+          "url": "http://dashboard-api:8000/alerts_timeseries",
+          "format": "table",
+          "parser": "jq",
+	  "root_selector": "."
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      }
+    },
+    {
+      "type": "barchart",
+      "title": "Alertas por tipo",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "targets": [
+        {
+          "type": "json",
+          "source": "url",
+          "url": "http://dashboard-api:8000/alerts_by_type",
+          "format": "table",
+          "parser": "jq",
+	  "root_selector": "."
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Últimas alertas",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 12 },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "targets": [
+        {
+          "type": "json",
+          "source": "url",
+          "url": "http://dashboard-api:8000/alerts_latest",
+          "format": "table",
+          "parser": "jq",
+	  "root_selector": "."
+        }
+      ]
+    }
+  ]
+}
+

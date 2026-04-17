@@ -1,0 +1,18 @@
+{
+  "name": "mongo-sink-raw",
+  "config": {
+    "connector.class": "com.mongodb.kafka.connect.MongoSinkConnector",
+    "tasks.max": "1",
+    "topics": "sensor_events_raw_mongo",
+
+    "connection.uri": "mongodb://mongodb:27017",
+    "database": "streaming_demo",
+    "collection": "eventos_raw",
+
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter.schemas.enable": "false",
+
+    "writemodel.strategy": "com.mongodb.kafka.connect.sink.writemodel.strategy.InsertOneDefaultStrategy"
+  }
+}

@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  dashboard-api:
+    image: python:3.11-slim
+    container_name: dashboard-api
+    hostname: dashboard-api
+    working_dir: /app
+    volumes:
+      - ./dashboard_api:/app
+    command: >
+      bash -c "pip install --no-cache-dir fastapi uvicorn pymongo &&
+               uvicorn app:app --host 0.0.0.0 --port 8000"
+    ports:
+      - "8000:8000"
+    environment:
+      MONGO_URI: "mongodb://172.31.43.130:27017"
+      MONGO_DB: "streaming_demo"
+      MONGO_COLLECTION: "alertas_temperatura"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    hostname: grafana
+    depends_on:
+      - dashboard-api
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: "admin"
+      GF_SECURITY_ADMIN_PASSWORD: "admin"
+      GF_INSTALL_PLUGINS: "yesoreyeram-infinity-datasource"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    restart: unless-stopped
+

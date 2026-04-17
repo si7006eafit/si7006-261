@@ -1,0 +1,195 @@
+{
+  "id": null,
+  "uid": "kafka-mongo-raw",
+  "title": "Kafka → MongoDB RAW Events Dashboard",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "5s",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Total eventos RAW",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "targets": [
+        {
+          "type": "json",
+          "source": "url",
+          "url": "http://dashboard-api:8000/raw_total",
+          "format": "table",
+          "parser": "jq",
+          "root_selector": "."
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "value",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value"
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Temperatura promedio RAW",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "targets": [
+        {
+          "type": "json",
+          "source": "url",
+          "url": "http://dashboard-api:8000/raw_avg_temperature",
+          "format": "table",
+          "parser": "jq",
+          "root_selector": "."
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "value",
+          "values": false
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Ratio alertas / raw (%)",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "targets": [
+        {
+          "type": "json",
+          "source": "url",
+          "url": "http://dashboard-api:8000/pipeline_summary",
+          "format": "table",
+          "parser": "jq",
+          "root_selector": "."
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "alert_ratio_pct",
+          "values": false
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Total alertas",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "targets": [
+        {
+          "type": "json",
+          "source": "url",
+          "url": "http://dashboard-api:8000/alerts_total",
+          "format": "table",
+          "parser": "jq",
+          "root_selector": "."
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "value",
+          "values": false
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Eventos RAW por minuto",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "targets": [
+        {
+          "type": "json",
+          "source": "url",
+          "url": "http://dashboard-api:8000/raw_timeseries",
+          "format": "table",
+          "parser": "jq",
+          "root_selector": "."
+        }
+      ]
+    },
+    {
+      "type": "barchart",
+      "title": "Eventos RAW por sensor",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "targets": [
+        {
+          "type": "json",
+          "source": "url",
+          "url": "http://dashboard-api:8000/raw_by_sensor",
+          "format": "table",
+          "parser": "jq",
+          "root_selector": "."
+        }
+      ]
+    },
+    {
+      "type": "barchart",
+      "title": "Eventos RAW por tipo",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "targets": [
+        {
+          "type": "json",
+          "source": "url",
+          "url": "http://dashboard-api:8000/raw_by_type",
+          "format": "table",
+          "parser": "jq",
+          "root_selector": "."
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Últimos eventos RAW",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "targets": [
+        {
+          "type": "json",
+          "source": "url",
+          "url": "http://dashboard-api:8000/raw_latest",
+          "format": "table",
+          "parser": "jq",
+          "root_selector": "."
+        }
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,12 @@
+{
+  "id": "string",             // rkey del post
+  "did": "string",            // DID del autor (repo)
+  "created_at": "ISO8601",
+  "text": "string",
+  "langs": ["es","en"],
+  "hashtags": ["string"],
+  "mentions": ["@handle? opcional"],
+  "uri": "string",            // at://did/app.bsky.feed.post/rkey (si disponible)
+  "raw": {}                   // evento Jetstream completo (opcional)
+}
+
