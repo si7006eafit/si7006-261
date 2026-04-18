@@ -170,6 +170,10 @@ Nota: Copy las credenciales de AWS ACADEMY en el archivo generado. tener en cuen
 
 # Análisis de datos con Kinesis Analytics (Flink)
 
+IMPORTANTE:
+
+        Hay un cambio importante: en abril de 2026 ya no puedes crear ni operar las antiguas Kinesis Data Analytics for SQL Applications; AWS las retiró desde el 27 de enero de 2026. Hoy esto debe hacerse como Amazon Managed Service for Apache Flink / Flink Studio usando SQL sobre tablas y conectores. AWS además documenta explícitamente el uso de Kinesis Data Streams como source y sink en aplicaciones Managed Flink
+
 1. Definir la tabla origen (kinesis source): Realice los ajustes necesarios en Nombre de campos o tipos
 
 TABLA ORIGEN:
