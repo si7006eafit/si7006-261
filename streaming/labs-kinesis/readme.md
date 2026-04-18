@@ -167,3 +167,188 @@ Nota: Copy las credenciales de AWS ACADEMY en el archivo generado. tener en cuen
         haga Deploy
 
 9. chequear en la base de datos DynamoDB la inserción de los registros.
+
+# Análisis de datos con Kinesis Analytics (Flink)
+
+1. Definir la tabla origen (kinesis source): Realice los ajustes necesarios en Nombre de campos o tipos
+
+TABLA ORIGEN:
+
+        CREATE TABLE source_orders (
+                InvoiceNo STRING,
+                StockCode STRING,
+                Description STRING,
+                Quantity INT,
+                InvoiceDate STRING,
+                UnitPrice DOUBLE,
+                CustomerID BIGINT,
+                Country STRING,
+                arrival_time TIMESTAMP(3) METADATA FROM 'timestamp',
+                proc_time AS PROCTIME()
+        ) WITH (
+                'connector' = 'kinesis',
+                'stream' = 'acmecoOrders',
+                'aws.region' = 'us-east-1',
+                'scan.stream.initpos' = 'LATEST',
+                'format' = 'json'
+        );
+
+2. Ejecutar el procesamiento continuo en ventana infinita: Adapte este ejemplo:
+
+Flujo continuo:
+
+        INSERT INTO output_stream
+        SELECT
+        sensor_id,
+        AVG(temperature) AS avg_temp,
+        TUMBLE_END(event_time, INTERVAL '10' SECOND) AS window_end
+        FROM sensor_stream
+        GROUP BY
+        TUMBLE(event_time, INTERVAL '10' SECOND),
+        sensor_id;
+
+Ejemplos potenciales para este caso:
+
+        CREATE TABLE source_orders (
+        InvoiceNo STRING,
+        StockCode STRING,
+        Description STRING,
+        Quantity INT,
+        InvoiceDate STRING,
+        UnitPrice DOUBLE,
+        CustomerID BIGINT,
+        Country STRING,
+        arrival_time TIMESTAMP(3) METADATA FROM 'timestamp',
+        proc_time AS PROCTIME()
+        ) WITH (
+        'connector' = 'kinesis',
+        'stream' = 'acmecoOrders',
+        'aws.region' = 'us-east-1',
+        'scan.stream.initpos' = 'LATEST',
+        'format' = 'json'
+        );
+
+        CREATE TEMPORARY VIEW proc_avg_sales_1min AS
+        SELECT
+        window_start,
+        window_end,
+        Country,
+        StockCode,
+        Description,
+        COUNT(*) AS num_events,
+        SUM(Quantity) AS total_units,
+        AVG(line_total) AS avg_sale_value,
+        SUM(line_total) AS total_revenue
+        FROM TABLE(
+        TUMBLE(TABLE orders_enriched, DESCRIPTOR(proc_time), INTERVAL '1' MINUTE)
+        )
+        GROUP BY
+        window_start,
+        window_end,
+        Country,
+        StockCode,
+        Description;
+
+Análisis:
+
+* Esto te da un flujo continuo de agregados por ventanas de 1 minuto:
+
+        - número de eventos
+        - unidades vendidas
+        - promedio del valor por línea
+        - ingreso total
+
+Variante: detectar “compra de stock” por devoluciones o anomalías
+
+Como el dataset también puede contener devoluciones en retail, otra tabla de eventos útil sería una tabla de alertas operativas:
+
+        RETURN_EVENT si Quantity < 0
+        PRICE_ANOMALY si UnitPrice <= 0
+        HIGH_VALUE_ORDER si Quantity * UnitPrice > umbral
+
+        CREATE TEMPORARY VIEW proc_operational_events AS
+        SELECT
+        InvoiceNo,
+        StockCode,
+        Description,
+        CustomerID,
+        Country,
+        Quantity,
+        UnitPrice,
+        Quantity * UnitPrice AS line_total,
+        CASE
+                WHEN Quantity < 0 THEN 'RETURN_EVENT'
+                WHEN UnitPrice <= 0 THEN 'PRICE_ANOMALY'
+                WHEN Quantity * UnitPrice > 500 THEN 'HIGH_VALUE_ORDER'
+                ELSE 'NORMAL'
+        END AS event_type
+        FROM source_orders
+        WHERE Quantity < 0
+        OR UnitPrice <= 0
+        OR (Quantity * UnitPrice) > 500;
+
+3. Tabla destino (kinesis sink), adapta este ejemplo para los campos especificos de procesamiento de Ordenes:
+
+TABLA DESTINO:
+
+        CREATE TABLE output_stream (
+        sensor_id STRING,
+        avg_temp DOUBLE,
+        window_end TIMESTAMP(3)
+        )
+        WITH (
+        'connector' = 'kinesis',
+        'stream' = 'output-stream-name',
+        'aws.region' = 'us-east-1',
+        'format' = 'json'
+        );
+
+Para este caso particular y de acuerdo a los analisis:
+
+        CREATE TABLE sink_order_metrics (
+        window_start TIMESTAMP(3),
+        window_end TIMESTAMP(3),
+        Country STRING,
+        StockCode STRING,
+        Description STRING,
+        num_events BIGINT,
+        total_units BIGINT,
+        avg_sale_value DOUBLE,
+        total_revenue DOUBLE
+        ) WITH (
+        'connector' = 'kinesis',
+        'stream' = 'acmecoOrdersMetrics',
+        'aws.region' = 'us-east-1',
+        'format' = 'json'
+        );
+
+Y publicas los resultados así:
+
+        INSERT INTO sink_order_metrics
+        SELECT
+        window_start,
+        window_end,
+        Country,
+        StockCode,
+        Description,
+        num_events,
+        total_units,
+        avg_sale_value,
+        total_revenue
+        FROM proc_avg_sales_1min;
+
+
+
+## Aspectos claves:
+
+* Conector Kinesis: Se utiliza 'connector' = 'kinesis' para leer/escribir en AWS Kinesis Data Streams.
+
+* Watermarks: Cruciales para el procesamiento de tiempo, definidos con WATERMARK FOR event_time.
+
+* Ventanas (TUMBLE): Agrupa datos en ventanas de tamaño fijo (saltos de tamaño constante).
+
+* Formato: Generalmente se usa JSON para la serialización de datos.
+
+Usar los notebooks de Kinesis Analytics
+
+
